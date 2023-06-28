@@ -1,9 +1,5 @@
 import random
 
-# (weight, size, value)
-trove_1 = [(1,1,1), (3,1,2), (4,2,0), (2,6,5), (1,4,1), (4,6,1), (7,10,6), (8,8,6), (7,4,6), (5,5,5)]
-trove_2 = [(2,1,2), (1,3,2), (5,1,7), (6,3,8), (9,4,6), (7,7,7), (1,1,1)]
-
 class Knapsack:
     """
     A knapsack with limited space.
@@ -19,7 +15,7 @@ class Knapsack:
         self.total_value = 0
         self.trove_copy = trove.copy()
         self.options = []
-
+        
         self.stash(trove)
         self.calculate()
     
@@ -47,11 +43,11 @@ class GenePool:
     with var names as keys and total value as the values.
     """
     
-    def __init__(self, pool_size, trove):
-        self.pool = {}
+    def __init__(self, pool_size, trove, pool):
         self.pool_size = pool_size
         self.trove = trove
-        
+        self.pool = pool
+        self.pool_total = self.tally() # update for class each generation
         self.generate_sacks()
         self.sack_size = 4
         #self.sack_size = len(self.pool[sack_0][0])
@@ -60,11 +56,23 @@ class GenePool:
         #self.mutation_rate = self.pool_size // 10 * random.randrange(self.pool_size)
         #self.crossover_rate = self.pool_size // 5 * random.randrange(self.pool_size)
         
-        for i in range(self.mutation_rate):
-            self.mutate()
+        #for i in range(self.mutation_rate):
+            #self.mutate()
         
-        for j in range(self.crossover_rate):
-            self.crossover()
+        #for j in range(self.crossover_rate):
+            #self.crossover()
+    
+    def tally(self):
+        """
+        Give the mean 
+        """
+        
+        tally_total = 0
+        for i in self.pool:
+            tally_total += i[1]
+        return tally_total
+    
+    
     
     def generate_sacks(self):
         for i in range(self.pool_size):
@@ -86,56 +94,39 @@ class GenePool:
         #But how do I check for duplicates (i.e. doubling up on the same option)?
         #Would it be easier if knapsack was not a separate class?
         #Or perhaps a list of options should be a list of unique indices?
-
-# 2023-06-18
-# next step: create an algorithm for how the mutations happen
-# next step after that is probably comparing different algorithms
-# based on performance
-# the step after that is probably selecting between different
-# algorithms by mutating and crossing over the algorithms themselves
-
-class Strategy:
-    """
-    Evolutionary strategy including mutation site and rate, crossover, etc.
-    Expressed as a class attribute expressing the algorithm (?).
-    A database of strategies and the score for each strategy stored as a class
-    attribute (cf. instance attribute) that gets updated with the outcomes.
-    """
+        
+    def solve(self):
+        history = [-1, -1, -1]
     
-    def __init__(self):
-        self.strat_dict = {}
-        
-    def gen_tactic(self):
-        """
-        Instructions for how to evolve the knapsacks
-        """
-        # 2023-06-19
-        # It's the knapsacks that are being selected, and it's the makeup of the
-        # options in the knapsacks that are evolving.
-        # what am I evolving for? 
-        # I guess the fewer "cycles" a strategy takes to converge on a solution,
-        # the better it is. And the higher the value of the knapsacks in the
-        # population, the closer it is to the solution. And if it stops changing
-        # after several cycles, then it must have hit a local maximum (could be
-        # also the global maximum). Do I assume that I don't know the maximum
-        # possible value of a population? I think I would want to generate a
-        # random trove in order to test the strategies. 
-        # 
+        self.tally()
+        new_total = self.pool_total
+    
+        history[0] = history[1]
+        history[1] = history[2]
+        history[2] = new_total
+        # check if pool has changed in value over the 
+        # last 3 generations
+    
+        self.mutate()
+        self.tally()
+        print(f"Mutation: The new total value is {new_total}.")
+        self.crossover()
+        self.tally()
+        print(f"Crossover: The new total value is {new_total}.")
+    
+        while history[2] != -1:
+            if history[0] == history[1] and history[1] == history[2]:
+                return self.pool        
 
-        
-    def select(self):
-        """
-        Compare the strategies in the dictionary and return the best one
-        """
-    def diversity(self):
-        """
-        Calculate the diversity of strategies based on a crude methodology,
-        by comparing the number of letters between the algorithms
-        """
-        
 
-# p = GenePool()
-# s = Strategy()
-# s.evolve(p) -> modify the set of Knapsack instances within the gene pool
-# 
-#genes_1 = GenePool(200, trove_1)
+# (weight, size, value)
+trove_1 = [(1,1,1), (3,1,2), (4,2,0), (2,6,5), (1,4,1), (4,6,1), (7,10,6), (8,8,6), (7,4,6), (5,5,5)]
+trove_2 = [(2,1,2), (1,3,2), (5,1,7), (6,3,8), (9,4,6), (7,7,7), (1,1,1)]
+
+ex_cohort = {
+    "sack_0": [(1,1,1), (3,1,2), (4,2,0), (2,6,5)],
+    "sack_1": [(2,6,5), (1,4,1), (7,10,6), (8,8,6)],
+    "sack_2": [(3,1,2), (1,4,1), (2,6,5), (7,10,6)],
+    "sack_3": [(2,6,5), (1,4,1), (4,6,1), (8,8,6)]
+}
+pool_1 = GenePool(4, trove_1, ex_cohort)
