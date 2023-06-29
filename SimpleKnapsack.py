@@ -11,6 +11,9 @@ class Trove:
         for i in range(treasure_count):
             self.all_treasures.append((random.randrange(self.max_value+1), random.randrange(self.max_weight+1)))
             # append a tuple in form of (value, weight) to self.treasures
+            
+    def show_treasures(self):
+        print(self.all_treasures)
 
 class Knapsack_Pool:
     """
@@ -32,11 +35,13 @@ class Knapsack_Pool:
             sack.append(random.randrange(2))
             # binary for inclusion/exclusion in sack
         for j in sack:
-            total_value += self.trove.all_treasures[j][0]
-            total_weight += self.trove.all_treasures[j][1]
+            if j == 1: # only run below weight and value gain if binary is 1
+                total_value += self.trove.all_treasures[j][0]
+                total_weight += self.trove.all_treasures[j][1]
         if total_weight > self.weight_limit:
             total_value = 0
-        self.pool.append((total_value, sack))
+        sack[0] = total_value # prepend total value as first element of list
+        self.pool.append(sack)
 
     def select(self):
         """
@@ -52,12 +57,21 @@ class Knapsack_Pool:
         """
         parents = []
         offspring = []
+        offspring_weight = 0
+        offspring_value = 0
         for i in range(2):
             parents.append(self.pool[random.randrange(len(self.pool))])
             # assign two parents to list of parents
         for j in parents[0]:
-            offspring.append(parents[random.randrange(2)][j])
+            allele = parents[random.randrange(2)][j-1] # index out of range for some reason
             # randomly pick between two parents for each 'base' in gene
+            offspring.append(allele)
+            if allele == 1:
+                offspring_weight += self.trove.all_treasures[j][0]
+                offspring_value += self.trove.all_treasures[j][1]
+        if offspring_weight <= self.weight_limit:
+            offspring[0] = offspring_value
+        
         self.pool.append(offspring)
     
     def mutate(self):
@@ -68,10 +82,19 @@ class Knapsack_Pool:
         mutator = self.pool[random.randrange(len(self.pool))]
         mutation_rate = 10
         mutation_threshold = 7
-        for i in range(len(mutator)):
+        mutator_new_val = 0
+        mutator_new_weight = 0
+        for i in range(1, len(mutator)): # skip first element (that's the value)
             mutation_score = random.randrange(mutation_rate)
             if mutation_score <= mutation_threshold:
                 mutator[i] = random.randrange(2)
+        for j in range(1, len(mutator)):
+            if j == 1:
+                mutator_new_val += self.trove.all_treasures[j][0]
+                mutator_new_weight += self.trove.all_treasures[j][1]
+        if mutator_new_weight > self.weight_limit:
+            mutator_new_val = 0
+        mutator[0] = mutator_new_val
             
     def show_sacks(self):
         """
