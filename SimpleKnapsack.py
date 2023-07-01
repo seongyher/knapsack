@@ -6,14 +6,20 @@ class Trove:
     """
     def __init__(self, treasure_count):
         self.all_treasures = []
-        self.max_value = 99
-        self.max_weight = 99
+        self.max_value = 1
+        self.max_weight = 2
+        self.total_value = 0
+        self.total_weight = 0
         for i in range(treasure_count):
             self.all_treasures.append((random.randrange(self.max_value+1), random.randrange(self.max_weight+1)))
+        for j in range(treasure_count):
+            self.total_value += self.all_treasures[j][0]
+            self.total_weight += self.all_treasures[j][1]
             # append a tuple in form of (value, weight) to self.treasures
             
     def show_treasures(self):
-        print(self.all_treasures)
+        for i in self.all_treasures:
+            print(i)
 
 class Knapsack_Pool:
     """
@@ -23,19 +29,19 @@ class Knapsack_Pool:
     def __init__(self, trove, pool_size):
         self.pool = []
         self.trove = trove
-        self.weight_limit = 50 * pool_size
+        self.weight_limit = pool_size * 10
         for i in range(pool_size):
             self.spawn()
 
     def spawn(self):
-        sack = []
+        sack = [0]
         total_value  = 0
         total_weight = 0
         for i in range(len(self.trove.all_treasures)):
             sack.append(random.randrange(2))
             # binary for inclusion/exclusion in sack
-        for j in sack:
-            if j == 1: # only run below weight and value gain if binary is 1
+        for j in range(len(sack) - 1):
+            if sack[j] == 1: # only run below weight and value gain if binary is 1
                 total_value += self.trove.all_treasures[j][0]
                 total_weight += self.trove.all_treasures[j][1]
         if total_weight > self.weight_limit:
@@ -67,8 +73,8 @@ class Knapsack_Pool:
             # randomly pick between two parents for each 'base' in gene
             offspring.append(allele)
             if allele == 1:
-                offspring_weight += self.trove.all_treasures[j][0]
-                offspring_value += self.trove.all_treasures[j][1]
+                offspring_value += self.trove.all_treasures[j][0]
+                offspring_weight += self.trove.all_treasures[j][1]
         if offspring_weight <= self.weight_limit:
             offspring[0] = offspring_value
         
