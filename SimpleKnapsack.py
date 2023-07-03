@@ -6,8 +6,8 @@ class Trove:
     """
     def __init__(self, treasure_count):
         self.all_treasures = []
-        self.max_value = 1
-        self.max_weight = 2
+        self.max_value = 100
+        self.max_weight = 20
         self.total_value = 0
         self.total_weight = 0
         for i in range(treasure_count):
@@ -30,6 +30,8 @@ class Knapsack_Pool:
         self.pool = []
         self.trove = trove
         self.weight_limit = pool_size * 10
+        self.gen_minus_2 = 0 # total pool value for grandparents generation
+        self.gen_minus_1 = 0 # total pool value for parents generation
         for i in range(pool_size):
             self.spawn()
 
@@ -48,13 +50,26 @@ class Knapsack_Pool:
             total_value = 0
         sack[0] = total_value # prepend total value as first element of list
         self.pool.append(sack)
+        
+    def evolve(self):
+        self.gen_minus_2 = self.gen_minus_1
+        self.gen_minus_1 = 0
+        for i in self.pool:
+            self.gen_minus_1 += i[0] # idx 0 shows the total value of each sack
+        while self.gen_minus_2 < self.gen_minus_1:
+            self.mutate()
+            self.cross()
+            # I should probably make this random, but it's fine for now
+            self.select()
+            print("Evolving...")
+            self.show_sacks()
 
     def select(self):
         """
         Kills off the bottom 10% of the lowest value sacks
         """
         self.pool.sort() # from smallest value to largest
-        self.pool = self.pool[len(self.pool)/10:] # slice off the first 10%
+        self.pool = self.pool[1:] # kill off lowest
 
     def cross(self):
         """
@@ -66,10 +81,11 @@ class Knapsack_Pool:
         offspring_weight = 0
         offspring_value = 0
         for i in range(2):
-            parents.append(self.pool[random.randrange(len(self.pool))])
+            parents.append(self.pool[random.randrange(len(self.pool))][1:])
+            print("Parent added:", parents[i])
             # assign two parents to list of parents
-        for j in parents[0]:
-            allele = parents[random.randrange(2)][j-1] # index out of range for some reason
+        for j in range(len(parents[0])):
+            allele = parents[random.randrange(2)][j]
             # randomly pick between two parents for each 'base' in gene
             offspring.append(allele)
             if allele == 1:
@@ -77,7 +93,7 @@ class Knapsack_Pool:
                 offspring_weight += self.trove.all_treasures[j][1]
         if offspring_weight <= self.weight_limit:
             offspring[0] = offspring_value
-        
+        print("Offspring added:", offspring)
         self.pool.append(offspring)
     
     def mutate(self):
@@ -117,6 +133,14 @@ class Knapsack_Pool:
     # at how many of the top n members are the same
     # another feature I could add is to always breed the top 2
     # members or always include the top 1 so that mating is assortative
+    
+    # 2023-07-01
+    # The evolve function on a while loop is working nicely.
+    # But I'm not sure what a clean way to check for plateauing in
+    # the evolution is. Even comparing pool[0][0] with pool[-1][0] after
+    # sorting (compare smallest to largest) might kind of be susceptible to
+    # a fluke. Maybe this won't matter much if the range of possible values
+    # is quite large.
     
 # TEST CASES
 test_trove = Trove(10)
