@@ -28,6 +28,7 @@ class Knapsack_Pool:
     
     def __init__(self, trove, pool_size):
         self.pool = []
+        self.pool_size = pool_size
         self.trove = trove
         self.weight_limit = pool_size * 10
         self.gen_minus_2 = 0 # total pool value for grandparents generation
@@ -55,7 +56,7 @@ class Knapsack_Pool:
         self.gen_minus_2 = self.gen_minus_1
         self.gen_minus_1 = 0
         for i in self.pool:
-            self.gen_minus_1 += i[0] # idx 0 shows the total value of each sack
+            self.gen_minus_1 += i[0]/self.pool_size # idx 0 shows the total value of each sack
         while self.gen_minus_2 < self.gen_minus_1:
             self.mutate()
             self.cross()
@@ -82,17 +83,19 @@ class Knapsack_Pool:
         offspring_value = 0
         for i in range(2):
             parents.append(self.pool[random.randrange(len(self.pool))][1:])
+            # add each parent without the total value elm (idx 0)
             print("Parent added:", parents[i])
-            # assign two parents to list of parents
         for j in range(len(parents[0])):
-            allele = parents[random.randrange(2)][j]
+            allele = parents[random.randrange(1)][j] # <-- still showing error
             # randomly pick between two parents for each 'base' in gene
             offspring.append(allele)
             if allele == 1:
                 offspring_value += self.trove.all_treasures[j][0]
                 offspring_weight += self.trove.all_treasures[j][1]
         if offspring_weight <= self.weight_limit:
-            offspring[0] = offspring_value
+            offspring = [offspring_value] + offspring
+        else:
+            offspring = [0] + offspring
         print("Offspring added:", offspring)
         self.pool.append(offspring)
     
@@ -134,13 +137,17 @@ class Knapsack_Pool:
     # another feature I could add is to always breed the top 2
     # members or always include the top 1 so that mating is assortative
     
-    # 2023-07-01
-    # The evolve function on a while loop is working nicely.
-    # But I'm not sure what a clean way to check for plateauing in
-    # the evolution is. Even comparing pool[0][0] with pool[-1][0] after
-    # sorting (compare smallest to largest) might kind of be susceptible to
-    # a fluke. Maybe this won't matter much if the range of possible values
-    # is quite large.
+    # 2023-07-04
+    # Evolution is actually working now.
+    # I now need to implement step 2, which is recognising when a
+    # solution has been reached. I think comparing the smallest to the
+    # largest is one way to do it (a crude way to estimate variance)
+    # and comparing the average of generations until the average is
+    # lower than the previous generation would work if continuous progress
+    # is assumed (it cannot be).
+    # 
+    # I wonder what the best way to do this is?
+    
     
 # TEST CASES
 test_trove = Trove(10)
