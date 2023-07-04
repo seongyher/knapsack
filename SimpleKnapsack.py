@@ -157,14 +157,15 @@ class Knapsack_Pool:
     
     # 2023-07-04
     # Evolution is actually working now.
-    # I now need to implement step 2, which is recognising when a
-    # solution has been reached. I think comparing the smallest to the
-    # largest is one way to do it (a crude way to estimate variance)
-    # and comparing the average of generations until the average is
-    # lower than the previous generation would work if continuous progress
-    # is assumed (it cannot be).
+    # Assortative mating is working but it's still not enough for there
+    # to be reliable progress. The population quickly becomes homogenous
+    # too early. I can just add more mutation, but that will soon make the
+    # process random again. Maybe mating should produce more than 1 offspring?
+    # but what would that do in this scenario exactly?
     # 
-    # I wonder what the best way to do this is?
+    # I wonder why there's regression betewen generations sometimes. I guess
+    # it's the mutation randomly hitting the top sacks (that is bad luck).
+    # Maybe mutation should only happen as a result of mating, to the offspring?
     
     
 # TEST CASES
