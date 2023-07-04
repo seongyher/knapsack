@@ -57,9 +57,12 @@ class Knapsack_Pool:
         self.gen_minus_1 = 0
         for i in self.pool:
             self.gen_minus_1 += i[0]/self.pool_size # idx 0 shows the total value of each sack
-        while self.gen_minus_2 < self.gen_minus_1:
+        # while self.gen_minus_2 < self.gen_minus_1:
+        for i in range(500):
             self.mutate()
-            self.cross()
+            self.mutate()
+            self.mutate()
+            self.assortative_cross()
             # I should probably make this random, but it's fine for now
             self.select()
             print("Evolving...")
@@ -78,15 +81,29 @@ class Knapsack_Pool:
         random combination of the two 'parent' knapsacks.
         """
         parents = []
-        offspring = []
-        offspring_weight = 0
-        offspring_value = 0
         for i in range(2):
             parents.append(self.pool[random.randrange(len(self.pool))][1:])
             # add each parent without the total value elm (idx 0)
             print("Parent added:", parents[i])
+        self.mating(parents)
+        
+    def assortative_cross(self):
+        """
+        always cross two highest value pair
+        """
+        parents = self.pool[:-2]
+        for i in range(2):
+            parents[i] = parents[i][1:]
+            # add each parent without the total value elm (idx 0)
+            print("Parent added:", parents[i])
+        self.mating(parents)
+            
+    def mating(self, parents):
+        offspring = []
+        offspring_weight = 0
+        offspring_value = 0
         for j in range(len(parents[0])):
-            allele = parents[random.randrange(1)][j] # <-- still showing error
+            allele = parents[random.randrange(1)][j]
             # randomly pick between two parents for each 'base' in gene
             offspring.append(allele)
             if allele == 1:
@@ -98,6 +115,7 @@ class Knapsack_Pool:
             offspring = [0] + offspring
         print("Offspring added:", offspring)
         self.pool.append(offspring)
+                
     
     def mutate(self):
         """
