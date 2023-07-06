@@ -122,7 +122,9 @@ class Knapsack_Pool:
         modify one random member in place, replacing it with a similar but
         different knapsack
         """
-        mutator = self.pool[random.randrange(len(self.pool))]
+        self.pool.sort()
+        mutator = self.pool[random.randrange(len(self.pool)-5)]
+        # this leaves out the top 5 sacks
         mutation_rate = 10
         mutation_threshold = 7
         mutator_new_val = 0
@@ -166,6 +168,7 @@ class Knapsack_Pool:
     # I wonder why there's regression betewen generations sometimes. I guess
     # it's the mutation randomly hitting the top sacks (that is bad luck).
     # Maybe mutation should only happen as a result of mating, to the offspring?
+    # 
     
     
 # TEST CASES
